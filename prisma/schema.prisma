@@ -1,0 +1,55 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url = env("POSTGRES_PRISMA_URL") // uses connection pooling
+  directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+}
+
+model Wallet {
+  id          String        @id @default(cuid())
+  address     String        @unique
+  code        String        @unique
+  username    String        @default("")
+  balance     Float         @default(0)
+  categories  String[]
+  bio         String
+  xLink       String
+  personalLink String
+  instagramLink       String
+  points      Float         @default(0)
+  pfpUrl      String        @default("pfp.png")
+  reedemedKey Boolean       @default(false)
+  submissions Submission[]
+}
+
+model Bounty {
+  id           String       @id @default(cuid())
+  title        String
+  description  String
+  endDate      DateTime
+  reward       String
+  submissions  Submission[]
+}
+
+enum SubmissionStatus {
+  pending
+  approved
+  declined
+}
+
+model Submission {
+  id             String            @id @default(cuid())
+  description    String
+  contentLink    String
+  socialLink     String
+  files          String[]          @default([])
+  bountyId       String
+  bounty         Bounty            @relation(fields: [bountyId], references: [id], onDelete: Cascade)
+  walletAddress  String
+  wallet         Wallet            @relation(fields: [walletAddress], references: [address], onDelete: Cascade)
+  isAccepted     Boolean           @default(false)
+  status         SubmissionStatus  @default(pending)
+}
